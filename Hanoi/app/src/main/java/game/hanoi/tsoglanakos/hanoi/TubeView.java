@@ -3,6 +3,13 @@ package game.hanoi.tsoglanakos.hanoi;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -12,16 +19,19 @@ import android.view.ViewGroup;
 
 public class TubeView extends ViewGroup {
 	private ArrayList<Brick> bricks = new ArrayList<Brick>();
-	public static int numOfBricks = 5;
+	public static int numOfBricks ;
 	private int color;
 	private int id;
 	private final static int ERROR=10000;
 	private static Brick selectedBrick;
-
-	public TubeView(final Activity context, int id) {
+	private Bitmap pipe;
+Activity context;
+	public TubeView(final Activity context, final int id) {
 		super(context);
 		setWillNotDraw(false);
 		this.id = id;
+		this.context=context;
+		numOfBricks=getSharedPref(getContext(),DBInfo,3);
 		if (id == 0)
 			for (int i = numOfBricks - 1; i >= 0; i--) {
 				Brick b = new Brick(context, i + 1);
@@ -29,6 +39,8 @@ public class TubeView extends ViewGroup {
 				addView(b);
 				bricks.add(b);
 			}
+		 pipe = BitmapFactory.decodeResource(getResources(), R.drawable.pipe);
+
 		setFocusable(true);
 		requestFocus();
 		setOnClickListener(new OnClickListener() {
@@ -70,10 +82,112 @@ public class TubeView extends ViewGroup {
 					}
 				}
 
+
+				if(id==2&&getChildCount()==numOfBricks){
+					winnerMethod();
+
+
+				}
+
 			}
 		});
 
 	}
+
+
+
+	protected static final String MY_PREFS_NAME = "Hanoi_Game";
+	protected static final String DBInfo = "LEVEL";
+
+	protected static int getSharedPref(Context context, String text, int defVal) {
+		SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME,  Context.MODE_PRIVATE);
+		return prefs.getInt(text, defVal);
+
+	}
+
+	public void storeSharePref(String text, int value) {
+
+		SharedPreferences.Editor editor = getContext().getSharedPreferences(MY_PREFS_NAME, Context.MODE_PRIVATE).edit();
+		editor.putInt(text, value);
+		editor.commit();
+	}
+
+	private void winnerMethod(){
+		Log.e("winner","winner");
+		if(numOfBricks<15)
+		numOfBricks++;
+		storeSharePref(DBInfo,numOfBricks);
+		dialogBox();
+
+		// choose next level or menu
+
+	}
+
+
+	public void dialogBox() {
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+		alertDialogBuilder.setMessage("Congratulations !!!! you manage to pass level "+(getSharedPref(getContext(),TubeView.DBInfo,3)-3)+".\nWhat will you do ?");
+
+		alertDialogBuilder.setPositiveButton(numOfBricks<15?"Next Level.":"Play again.",
+				new DialogInterface.OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+						context.runOnUiThread(new Thread(){
+							@Override
+							public void run() {
+		nextLevel();
+							}
+						});
+
+					}
+				});
+
+		alertDialogBuilder.setNegativeButton("Menu",
+				new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+						context.runOnUiThread(new Thread(){
+							@Override
+							public void run() {
+goToMenu();
+							}
+						});
+					}
+				});
+
+		AlertDialog alertDialog = alertDialogBuilder.create();
+		alertDialog.show();
+	}
+	private void goToMenu(){
+		context.runOnUiThread(new Thread(){
+			@Override
+			public void run() {
+
+
+				Intent intent= new Intent(getContext(),MenuActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				getContext().startActivity(intent);
+
+			}
+		});
+
+	}
+	private void nextLevel(){
+		context.runOnUiThread(new Thread(){
+			@Override
+			public void run() {
+
+
+				Intent intent = new Intent(getContext(), MainActivity.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				getContext().startActivity(intent);
+			}});
+	}
+
 
 	public int getTopBrickValueOfTube() {
 		if (bricks.isEmpty())
@@ -148,5 +262,9 @@ public class TubeView extends ViewGroup {
 		paint.setColor(color);
 		canvas.drawRect(getWidth() / 2 - getWidth() / 20, getHeight() / 3,
 				getWidth() / 2 + getWidth() / 20, getHeight(), paint);
+
+		Bitmap newBitmap = Bitmap.createScaledBitmap(pipe, getWidth() / 10,
+				getHeight(), false);
+		canvas.drawBitmap(newBitmap,getWidth() / 2 - getWidth() / 20,0,paint);
 	}
 }

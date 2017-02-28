@@ -50,7 +50,7 @@ public class Brick extends View {
 	protected void onDraw(Canvas canvas) {
 
 		Paint paint = new Paint();
-		paint.setColor(Color.WHITE);
+		paint.setColor(getResources().getColor(R.color.Transparent));
 		canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
 		// canvas.drawOval(getWidth() / 2- ((id + (float) 1.0) /
 		// (TubeView.numOfBricks + 1))
