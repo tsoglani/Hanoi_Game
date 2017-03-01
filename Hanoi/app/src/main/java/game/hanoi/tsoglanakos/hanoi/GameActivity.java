@@ -14,22 +14,30 @@ import android.widget.RelativeLayout;
 
 import com.makeramen.roundedimageview.RoundedImageView;
 
-public class MainActivity extends Activity {
+public class GameActivity extends Activity {
 private GameVeiwGrpoup gvg;
+	public static int  moves_counter=0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		RelativeLayout rl=(RelativeLayout) findViewById(R.id.r_layout);
-		gvg= new GameVeiwGrpoup(this);
-		rl.addView(gvg);
-		setContentView(rl);
+		RelativeLayout rl=(RelativeLayout) findViewById(R.id.frame);
+		RelativeLayout gl=(RelativeLayout) findViewById(R.id.r_layout);
 
+		Brick.fillBrickRemainingColors();
+		gvg= new GameVeiwGrpoup(this);
+		setContentView(rl);
+		gl.addView(gvg);
+
+		moves_counter=0;
 
 
 	}
 
-
-
-
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		TubeView.stopCountTime=true;
+	}
 }

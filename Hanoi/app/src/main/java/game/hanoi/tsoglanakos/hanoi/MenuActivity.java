@@ -10,10 +10,15 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class MenuActivity extends AppCompatActivity {
 private TextView level_text;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,11 +28,17 @@ private TextView level_text;
         level_text.setText("Curent Level:"+(getSharedPref(getApplicationContext(),TubeView.DBInfo,3)-2));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        level_text=(TextView) findViewById(R.id.level_text);
 
+        level_text.setText("Curent Level:"+(getSharedPref(getApplicationContext(),TubeView.DBInfo,3)-2));
+    }
 
-public void newGame(View v){
+    public void newGame(View v){
 
-    Intent intent= new Intent(getApplicationContext(),MainActivity.class);
+    Intent intent= new Intent(getApplicationContext(),GameActivity.class);
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     startActivity(intent);
@@ -72,9 +83,64 @@ public void newGame(View v){
     public void resetFunction(View v){
         dialogBox();
     }
+public void prefFunction(View v){
+//    Intent intent= new Intent(getApplicationContext(),Pref.class);
+//    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//    startActivity(intent);
+runOnUiThread(new Thread(){
+    @Override
+    public void run() {
+        prefDialog();
+    }
+});
+}
 
+private void prefDialog(){
 
+    View checkBoxView = View.inflate(this, R.layout.pref, null);
+   final CheckBox checkBox = (CheckBox) checkBoxView.findViewById(R.id.checkbox);
+    checkBox.setChecked(getSharedPrefBool(getApplicationContext(), TubeView.DBCHALLENGEINFO, false));
+    checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            // Save to shared preferences
+        }
+    });
+    checkBox.setText("Time");
+
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setIcon(getResources().getDrawable(android.R.drawable.ic_dialog_alert));
+
+    builder.setTitle("Do you want to make it hard?");
+    builder.setMessage("timer mode.")
+            .setView(checkBoxView)
+            .setCancelable(false)
+            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    storeSharePref(TubeView.DBCHALLENGEINFO,checkBox.isChecked());
+                                             }
+            })
+            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+                }
+            }).show();
+}
+
+    protected static boolean getSharedPrefBool(Context context, String text, boolean defVal) {
+        SharedPreferences prefs = context.getSharedPreferences(TubeView.MY_PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(text, defVal);
+
+    }
+    public void storeSharePref(String text, boolean value) {
+
+        SharedPreferences.Editor editor = getSharedPreferences(TubeView.MY_PREFS_NAME, Context.MODE_PRIVATE).edit();
+        editor.putBoolean(text, value);
+        editor.commit();
+    }
 
 // Dialog box
 
